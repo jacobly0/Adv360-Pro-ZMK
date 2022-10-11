@@ -12,17 +12,37 @@
 
 #define STRINGIFY(x) #x
 
-#define UNSHIFTED(name, key) \
-  us_ ## name: macro_us_ ## name { \
+#define UNSHIFT_1(name, shift, key) \
+  name: macro_ ## name { \
     compatible = "zmk,behavior-macro"; \
-    label = STRINGIFY(macro_us_ ## name); \
+    label = STRINGIFY(macro_ ## name); \
     #binding-cells = <0>; \
     wait-ms = <10>; \
-    bindings = <&macro_release &kp LEFT_SHIFT &kp RIGHT_SHIFT>, \
+    bindings = <&macro_release &kp shift ## _SHIFT>, \
                <&macro_press &kp key>, \
                <&macro_pause_for_release>, \
                <&macro_release &kp key>, \
-               <&macro_press &kp LEFT_SHIFT>; \
+               <&macro_press &kp shift ## _SHIFT>; \
+  }
+
+#define UNSHIFT(name, key) \
+  UNSHIFT_1(lus_ ## name, LEFT, key); \
+  UNSHIFT_1(rus_ ## name, RIGHT, key)
+
+#define SHIFT_MORPH_UNSHIFT(name, key, morph) \
+  name ## _inner: behavior_ ## name ## _inner { \
+    compatible = "zmk,behavior-mod-morph"; \
+    label = STRINGIFY(behavior_ ## name ## _inner); \
+    #binding-cells = <0>; \
+    bindings = <&kp key>, <&rus_ ## morph>; \
+    mods = <(MOD_RSFT)>; \
+  }; \
+  name: behavior_ ## name { \
+    compatible = "zmk,behavior-mod-morph"; \
+    label = STRINGIFY(behavior_ ## name); \
+    #binding-cells = <0>; \
+    bindings = <&name ## _inner>, <&lus_ ## morph>; \
+    mods = <(MOD_LSFT)>; \
   }
 
 #define SHIFT_MORPH(name, key, morph) \
@@ -30,40 +50,40 @@
     compatible = "zmk,behavior-mod-morph"; \
     label = STRINGIFY(behavior_ ## name); \
     #binding-cells = <0>; \
-    bindings = <key>, <morph>; \
+    bindings = <&kp key>, <&kp morph>; \
     mods = <(MOD_LSFT|MOD_RSFT)>; \
   }
 
 / {
   macro {
-    UNSHIFTED(0, NUMBER_0);
-    UNSHIFTED(1, NUMBER_1);
-    UNSHIFTED(2, NUMBER_2);
-    UNSHIFTED(3, NUMBER_3);
-    UNSHIFTED(4, NUMBER_4);
-    UNSHIFTED(5, NUMBER_5);
-    UNSHIFTED(6, NUMBER_6);
-    UNSHIFTED(7, NUMBER_7);
-    UNSHIFTED(8, NUMBER_8);
-    UNSHIFTED(9, NUMBER_9);
-    UNSHIFTED(grave, GRAVE);
+    UNSHIFT(0, NUMBER_0);
+    UNSHIFT(1, NUMBER_1);
+    UNSHIFT(2, NUMBER_2);
+    UNSHIFT(3, NUMBER_3);
+    UNSHIFT(4, NUMBER_4);
+    UNSHIFT(5, NUMBER_5);
+    UNSHIFT(6, NUMBER_6);
+    UNSHIFT(7, NUMBER_7);
+    UNSHIFT(8, NUMBER_8);
+    UNSHIFT(9, NUMBER_9);
+    UNSHIFT(grave, GRAVE);
   };
 
   behaviors {
-    SHIFT_MORPH(dollar_tilde, &kp DOLLAR, &kp TILDE);
-    SHIFT_MORPH(amp_prcnt, &kp AMPERSAND, &kp PERCENT);
-    SHIFT_MORPH(lbkt_7, &kp LEFT_BRACKET, &us_7);
-    SHIFT_MORPH(lbrc_5, &kp LEFT_BRACE, &us_5);
-    SHIFT_MORPH(rbrc_3, &kp RIGHT_BRACE, &us_3);
-    SHIFT_MORPH(lpar_1, &kp LEFT_PARENTHESIS, &us_1);
-    SHIFT_MORPH(equal_9, &kp EQUAL, &us_9);
-    SHIFT_MORPH(astrk_0, &kp ASTERISK, &us_0);
-    SHIFT_MORPH(rpar_2, &kp RIGHT_PARENTHESIS, &us_2);
-    SHIFT_MORPH(plus_4, &kp PLUS, &us_4);
-    SHIFT_MORPH(rbkt_6, &kp RIGHT_BRACKET, &us_6);
-    SHIFT_MORPH(excl_8, &kp EXCLAMATION, &us_8);
-    SHIFT_MORPH(hash_grave, &kp HASH, &us_grave);
-    SHIFT_MORPH(at_caret, &kp AT_SIGN, &kp CARET);
+    SHIFT_MORPH(dollar_tilde, DOLLAR, TILDE);
+    SHIFT_MORPH(amp_prcnt, AMPERSAND, PERCENT);
+    SHIFT_MORPH_UNSHIFT(lbkt_7, LEFT_BRACKET, 7);
+    SHIFT_MORPH_UNSHIFT(lbrc_5, LEFT_BRACE, 5);
+    SHIFT_MORPH_UNSHIFT(rbrc_3, RIGHT_BRACE, 3);
+    SHIFT_MORPH_UNSHIFT(lpar_1, LEFT_PARENTHESIS, 1);
+    SHIFT_MORPH_UNSHIFT(equal_9, EQUAL, 9);
+    SHIFT_MORPH_UNSHIFT(astrk_0, ASTERISK, 0);
+    SHIFT_MORPH_UNSHIFT(rpar_2, RIGHT_PARENTHESIS, 2);
+    SHIFT_MORPH_UNSHIFT(plus_4, PLUS, 4);
+    SHIFT_MORPH_UNSHIFT(rbkt_6, RIGHT_BRACKET, 6);
+    SHIFT_MORPH_UNSHIFT(excl_8, EXCLAMATION, 8);
+    SHIFT_MORPH_UNSHIFT(hash_grave, HASH, grave);
+    SHIFT_MORPH(at_caret, AT_SIGN, CARET);
   };
 
   combos {
